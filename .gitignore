@@ -1,0 +1,19 @@
+*json
+*.safetensors
+*.pt
+*.pyc
+*.bin
+*.lock
+*.tar
+*.png
+__pycache__/
+.ipynb_checkpoints/
+dataset/
+
+*.log
+
+# Ignore SCC qsub status files
+*.sh.e*
+*.sh.o*
+*.sh.pe*
+*.sh.po*
