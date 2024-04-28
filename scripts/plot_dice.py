@@ -89,42 +89,4 @@ def process_DiceLog_plot(save_path, modal_type, EXP_Name, log_file_paths):
     print(f"Scores and plots have been saved to {csv_path} and {plot_path}")
 
 
-def main():
-    EXP_Name = "exp_flair_opAdam_lr0.0001_bs16_epoch0_200"
-    save_path = f"/projectnb/ds598/projects/smart_brains/RESULTS/{EXP_Name}"
-    modal_type = EXP_Name.split("_")[1]
-    log_file_paths = f"/projectnb/ds598/projects/smart_brains/{EXP_Name}_training.log"
-    process_DiceLog_plot(save_path, modal_type, EXP_Name, [log_file_paths])
 
-    EXP_Name = "exp_t1ce_opAdam_lr0.0001_bs16_epoch0_200"
-    save_path = f"/projectnb/ds598/projects/smart_brains/RESULTS/{EXP_Name}"
-    modal_type = EXP_Name.split("_")[1]
-    log_file_paths = f"/projectnb/ds598/projects/smart_brains/{EXP_Name}_training.log"
-    process_DiceLog_plot(save_path, modal_type, EXP_Name, [log_file_paths])
-
-    EXP_Name = "exp_t1ce-flair_opAdam_lr0.0001_bs16_epoch0_200"
-    save_path = f"/projectnb/ds598/projects/smart_brains/RESULTS/{EXP_Name}"
-    modal_type = EXP_Name.split("_")[1]
-    log_file_paths = f"/projectnb/ds598/projects/smart_brains/{EXP_Name}_training.log"
-    process_DiceLog_plot(save_path, modal_type, EXP_Name, [log_file_paths])
-
-    EXP_Name = "expAugmented_flair_opAdam_lr0.0001_bs16_epoch0_200"
-    save_path = f"/projectnb/ds598/projects/smart_brains/RESULTS/{EXP_Name}"
-    modal_type = EXP_Name.split("_")[1]
-    log_file_paths = f"/projectnb/ds598/projects/smart_brains/{EXP_Name}_training.log"
-    process_DiceLog_plot(save_path, modal_type, EXP_Name, [log_file_paths])
-
-    EXP_Name = "expAugmented_t1ce_opAdam_lr0.0001_bs16_epoch0_200"
-    save_path = f"/projectnb/ds598/projects/smart_brains/RESULTS/{EXP_Name}"
-    modal_type = EXP_Name.split("_")[1]
-    log_file_paths = f"/projectnb/ds598/projects/smart_brains/{EXP_Name}_training.log"
-    process_DiceLog_plot(save_path, modal_type, EXP_Name, [log_file_paths])
-
-    EXP_Name = "expAugmented_t1ce-flair_opAdam_lr0.0001_bs16_epoch0_200"
-    save_path = f"/projectnb/ds598/projects/smart_brains/RESULTS/{EXP_Name}"
-    modal_type = EXP_Name.split("_")[1]
-    log_file_paths = f"/projectnb/ds598/projects/smart_brains/{EXP_Name}_training.log"
-    process_DiceLog_plot(save_path, modal_type, EXP_Name, [log_file_paths])
-
-
-main()

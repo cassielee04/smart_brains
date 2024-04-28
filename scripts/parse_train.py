@@ -22,13 +22,7 @@ from utils import (
 
 # qrsh -pe omp 4 -P ds598 -l gpus=1
 # conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
-# export MODEL_PATH=/projectnb/ds598/projects/smart_brains
-# python parse_train.py --num_epochs "200" --learn_rate "1e-4" --modal_type [t1ce] --exp_name "exp"
-# python parse_train.py --num_epochs "200" --learn_rate "1e-4" --modal_type [t1ce] --with_transform true --exp_name "expAugmented"
-# python parse_train.py --num_epochs "200" --learn_rate "1e-4" --modal_type [flair] --exp_name "exp"
-# python parse_train.py --num_epochs "200" --learn_rate "1e-4" --modal_type [flair] --with_transform true --exp_name "expAugmented"
-# python parse_train.py --num_epochs "200" --learn_rate "1e-4" --modal_type [t1ce,flair] --exp_name "exp"
-# python parse_train.py --num_epochs "200" --learn_rate "1e-4" --modal_type [t1ce,flair] --with_transform true --exp_name "expAugmented"
+# export MODEL_PATH=./default_path
 
 # python parse_train.py --num_epochs "2" --learn_rate "1e-4" --modal_type [t1ce,flair] --exp_name "temp"
 # python parse_train.py --num_epochs "2" --learn_rate "1e-4" --modal_type [t1ce,flair] --with_transform true --exp_name "temp"
@@ -40,7 +34,7 @@ parser.add_argument('--num_epochs', type=int, default=20, help='Number of epochs
 parser.add_argument('--learn_rate', type=float, default=1e-4, help='Learning rate for optimizer.')
 parser.add_argument('--batch_size', type=int, default=16, help='Batch size for training.')
 parser.add_argument('--loss_type', type=str, default='MultiDice', choices=['CrossEntropy', 'Dice', 'MultiDice'], help='Loss function to use.')
-#parser.add_argument('--model_path', type=str, default='/projectnb/ds598/projects/smart_brains', help='Path to save the model.')
+#parser.add_argument('--model_path', type=str, default='./default_path', help='Path to save the model.')
 parser.add_argument('--modal_type', type=str, default='T1CE', help='Type of imaging modality.')
 parser.add_argument('--exp_name', type=str, default='MyExperiment', help='Experiment name.')
 parser.add_argument('--optimizer_name', type=str, default='Adam', help='Name of the optimizer.')
