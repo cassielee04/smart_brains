@@ -26,7 +26,6 @@ mkl-random @ file:///croot/mkl_random_1695059800811/work
 mkl-service==2.4.0
 mpmath @ file:///croot/mpmath_1690848262763/work
 munkres==1.1.4
-networkx @ file:///croot/networkx_1690561992265/work
 nibabel==5.2.1
 nltk==3.8.1
 numexpr @ file:///croot/numexpr_1696515281613/work
@@ -34,7 +33,6 @@ numpy @ file:///croot/numpy_and_numpy_base_1708638617955/work/dist/numpy-1.26.4-
 opencv-python-headless==4.9.0.80
 packaging @ file:///croot/packaging_1710807400464/work
 pandas @ file:///croot/pandas_1709590491089/work/dist/pandas-2.2.1-cp39-cp39-linux_x86_64.whl#sha256=c2fe2574e63acef055e68e1e22d04943804291b7fe3a39b832edfd1b87570954
-pillow @ file:///croot/pillow_1707233021655/work
 ply==3.11
 pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
 pydantic==2.7.0
@@ -51,7 +49,6 @@ requests @ file:///croot/requests_1707355572290/work
 scikit-image==0.22.0
 scikit-learn==1.4.2
 scipy==1.13.0
-seaborn @ file:///croot/seaborn_1673479180098/work
 sip @ file:///croot/sip_1698675935381/work
 six @ file:///tmp/build/80754af9/six_1644875935023/work
 sympy @ file:///croot/sympy_1701397643339/work
