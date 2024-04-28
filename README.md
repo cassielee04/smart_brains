@@ -6,7 +6,16 @@
 
 We implemented U-Net for the BraTS challenge using data downloaded from https://www.kaggle.com/datasets/kanisfatemashanta/brats2021-training-and-validation. Since the validation folder in this dataset does not include ground truth label data, we randomly selected 10 images from the training folder for testing purposes. We then applied an 8:2 ratio split for training and validation.
 
+### Project Goal
+**1. Segmentation and Classification:** Accurately segment and classify four distinct classes in the brain scan with tumors.
+
+**2. Comparative Analysis:** Compare the UNET model’s segmentation performance between single modalities and multiple modalities input
+
+
+
+
 ## Model structure
+
 
 
 
