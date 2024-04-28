@@ -79,7 +79,7 @@ Run the script from the command line, providing either one of following argument
 ### Examples
 **1. Using the default settings:**
 ```bash
-python scripts/metrics.py--model_folder path/to/model/RESULTS
+python scripts/metrics.py --model_folder path/to/model/RESULTS
 ```
 This command runs the script using all models in the specified folder without specifying any particular models to load.
 
