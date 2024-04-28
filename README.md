@@ -1,4 +1,4 @@
 # smart_brains
 
 ## demo
-![python3.10](https://www.python.org/downloads/release/python-31014/)
+![python3.6](https://img.shields.io/badge/python-3.6-blue.svg)
