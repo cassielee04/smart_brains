@@ -8,7 +8,7 @@ We implemented U-Net for the BraTS challenge using data downloaded from https://
 
 ## Model structure
 
-
+![caption_1](Model_structure.png)
 
 
 
