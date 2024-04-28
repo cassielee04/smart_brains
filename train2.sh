@@ -6,8 +6,8 @@
 module load miniconda
 conda activate dl4ds # activate your conda environment
 
-export PYTHONPATH="/projectnb/ds598/projects/smart_brains:$PYTHONPATH"
-python train.py 
+export PYTHONPATH="/projectnb/ds598/projects/smart_brains/scripts:$PYTHONPATH"
+python scripts/train.py 
 
 
 

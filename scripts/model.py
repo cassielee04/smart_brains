@@ -1,14 +1,17 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
+import torch.nn.functional as functional
+# from torchsummary import summary
 
 class DoubleConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, dropout_prob=0.5):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
+            # nn.Dropout(dropout_prob),  # Dropout layer after the first ReLU
             nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
@@ -72,7 +75,9 @@ class DiceLoss(nn.Module):
     def forward(self, predicted, target, smooth=1e-6):
         # Flatten predictions and targets
         predicted_flat = predicted.view(-1)
+        print("predicted size",predicted.size())
         target_flat = target.view(-1)
+        print("target size",target.size())
 
         intersection = (predicted_flat * target_flat).sum()
         union = predicted_flat.sum() + target_flat.sum()
@@ -84,12 +89,66 @@ class DiceLoss(nn.Module):
 
         return dice_loss
 
-def test():
-    x = torch.randn((3, 1, 160, 160))
-    model = UNET(in_channels=1, out_channels=4)
-    preds = model(x)
+class MulticlassDiceLoss(nn.Module):
+    def __init__(self, weight=None, reduction='mean', smooth=1e-8):
+        super(MulticlassDiceLoss, self).__init__()
+        self.weight = weight
+        self.reduction = reduction
+        self.smooth = smooth
 
-    print(preds.shape)
+    def forward(self, inputs, targets):
+        # inputs: Batch Size x Number of Classes x H x W
+        # targets: Batch Size x H x W (LongTensor, not one-hot)
+        num_classes = inputs.shape[1]
+
+        if self.weight is None:
+            self.weight = torch.ones(num_classes, device=inputs.device)
+
+        inputs = functional.softmax(inputs, dim=1)
+        targets_one_hot = functional.one_hot(targets, num_classes).permute(0, 3, 1, 2).float()
+        
+        inputs = inputs.view(inputs.shape[0], num_classes, -1)
+        targets_one_hot = targets_one_hot.view(targets_one_hot.shape[0], num_classes, -1)
+
+        intersection = (inputs * targets_one_hot).sum(-1)
+        cardinality = inputs.sum(-1) + targets_one_hot.sum(-1)
+
+        dice_score = 2. * intersection / (cardinality + self.smooth)
+        #print("self.weight", self.weight)
+        weighted_dice_score = dice_score * self.weight
+        dice_loss = 1 - weighted_dice_score
+
+        if self.reduction == 'mean':
+            return dice_loss.mean()
+        elif self.reduction == 'sum':
+            return dice_loss.sum()
+        else:
+            return dice_loss   
+            
+
+def test():
+    #x = torch.randn((3, 1, 160, 160))
+    #model = UNET(in_channels=1, out_channels=4)
+    #preds = model(x)
+    #print(preds.shape)
+    print("Suppose the input only has 1 modality")
+    model = UNET(in_channels=1, out_channels=4, features=[64, 128, 256, 512])
+    input_size = (1, 240, 240)  # (channels, height, width)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+    
+    # Generate and print the model summary
+    # summary(model, input_size)
+
+    print("Suppose the input only has 2 modality")
+    model2 = UNET(in_channels=2, out_channels=4, features=[64, 128, 256, 512])
+    input_size2 = (2, 240, 240)  # (channels, height, width)
+    model2.to(device)
+    
+    # Generate and print the model summary
+    # summary(model2, input_size2)
+
+    
 
 if __name__ == "__main__":
     test()

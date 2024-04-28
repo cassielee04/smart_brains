@@ -1,48 +1,88 @@
 import os
 import logging
+import argparse
 import torch
 import torch.optim as optim
 import torch.cuda.amp as amp
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 import torch.nn as nn
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from model import UNET, DiceLoss, MulticlassDiceLoss
+from model import UNET, DiceLoss,MulticlassDiceLoss
 from utils import (
     load_checkpoint, 
     save_checkpoint, 
     get_loader, 
     check_accuracy,
-    save_prediction_as_imgs,)
+    save_prediction_as_imgs,
+    get_last_model_name,)
 
 # qrsh -pe omp 4 -P ds598 -l gpus=1
 # conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 
-NUM_EPOCHS = 50
-LEARN_RATE = 1e-8  #reduced to 1e-5 for epoch 30-50
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")#"cuda" #"cuda" if torch.cuda.is_available else "cpu"
-BATCH_SIZE = 16
+
+
+# Setup the argument parser
+parser = argparse.ArgumentParser(description="Training script for U-Net model.")
+parser.add_argument('--num_epochs', type=int, default=20, help='Number of epochs to train for.')
+parser.add_argument('--learn_rate', type=float, default=1e-4, help='Learning rate for optimizer.')
+parser.add_argument('--batch_size', type=int, default=16, help='Batch size for training.')
+parser.add_argument('--loss_type', type=str, default='MultiDice', choices=['CrossEntropy', 'Dice', 'MultiDice'], help='Loss function to use.')
+parser.add_argument('--model_path', type=str, default='/projectnb/ds598/projects/smart_brains', help='Path to save the model.')
+parser.add_argument('--modal_type', type=str, default='T1CE', help='Type of imaging modality.')
+parser.add_argument('--exp_name', type=str, default='MyExperiment', help='Experiment name.')
+parser.add_argument('--optimizer_name', type=str, default='Adam', help='Name of the optimizer.')
+parser.add_argument('--load_model_name', type=str, default='', help='Model name to load if LOAD_MODEL is True.')
+parser.add_argument('--load_last_model', action='store_true', help='Load the last model saved or start straining from scratch.')
+
+
+# Parse the arguments
+args = parser.parse_args()
+
+# Variables
+NUM_EPOCHS = args.num_epochs
+LEARN_RATE = args.learn_rate
+BATCH_SIZE = args.batch_size
+LOSS_TYPE = args.loss_type
+MODEL_PATH = args.model_path
+MODAL_TYPE = args.modal_type
+EXP_NAME = args.exp_name
+optimizer_name = args.optimizer_name
+load_model_name = args.load_model_name
+
+# DEVICE is determined by checking the availability of CUDA
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+# The rest of the constants remain unchanged
 NUM_WORKERS = 4
 PIN_MEMORY = True
-LOAD_MODEL = True
-LOSS_TYPE = "MultiDice" # "MultiDice" #"CrossEntropy" # or "BCEWithLogitLoss", "Dice"
+# LOAD_MODEL = False
 IMAGE_HEIGHT = 240
 IMAGE_WIDTH = 240
 SPLIT_RATIO = 0.8
-MODEL_PATH = "/projectnb/ds598/projects/smart_brains"
-MODAL_TYPE = ["Flair","T1ce"]
-EXP_NAME = "Selena"
-optimizer_name = "Adam"
-load_model_name = "Selena_Flair-T1ce_opAdam_lr1e-06_bs16_epoch13_33" # "SelenaTemp_Flair-T1ce_opAdam_lr0.0001_bs16_epoch0_20"
 START_EPOCH = 0
 
-FineTune = False
+# Determine the model name to load
+if args.load_last_model:
+    load_model_name = get_last_model_name(args.model_path)
+    if not load_model_name:
+        print("No last model found. Starting training from scratch.")
+else:
+    load_model_name = args.load_model_name
+
+if load_model_name: 
+    LOAD_MODEL = True
+    print(f"Loading model: {load_model_name}")
+    # Code to load the model goes here
+else:
+    LOAD_MODEL = False
+    print("No model specified. Starting training from scratch.")
+
 
 # model initialization
 n_out_channels = 4
-MODEL = UNET(in_channels=len(MODAL_TYPE), out_channels=n_out_channels).to(DEVICE)
+MODEL = UNET(in_channels=1, out_channels=n_out_channels).to(DEVICE)
 # specify optimizer
+
 if optimizer_name == "Adam":
     OPTIMIZER = optim.Adam(MODEL.parameters(), lr=LEARN_RATE)
 elif optimizer_name == "SGD":
@@ -50,7 +90,6 @@ elif optimizer_name == "SGD":
 else:
     print("Please use Adam or SGD!")
 
-# scheduler = optim.lr_scheduler.CosineAnnealingLR(OPTIMIZER, Tmax = NUM_EPOCHS)
 
 if LOAD_MODEL:
     pretrained_model, optimizer_pretrained, saved_epoch_pretrained, dice_log_pretrained = load_checkpoint(f"{MODEL_PATH}/model_checkpoint/{load_model_name}_model_checkpoint.pth.tar", MODEL, OPTIMIZER)
@@ -58,7 +97,7 @@ if LOAD_MODEL:
     START_EPOCH = saved_epoch_pretrained
 
 
-EXP_NAME = f"{EXP_NAME}_{'-'.join(MODAL_TYPE)}_op{optimizer_name}_lr{LEARN_RATE}_bs{BATCH_SIZE}_epoch{START_EPOCH}_{START_EPOCH+NUM_EPOCHS}"
+EXP_NAME = f"{EXP_NAME}_{MODAL_TYPE}_op{optimizer_name}_lr{LEARN_RATE}_bs{BATCH_SIZE}_epoch{START_EPOCH}_{START_EPOCH+NUM_EPOCHS}"
 
 logging.basicConfig(level=logging.INFO, filename=f'{MODEL_PATH}/{EXP_NAME}_training.log', filemode='w', format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -66,25 +105,22 @@ def train_function(loader, model, optimizer, loss_fn, scaler):
     model.train()
     loop = tqdm(loader)
     for batch_idx, (data, targets) in enumerate(loop): 
-       # print(data.size())
-        #data = data.squeeze(1) 
-        
+        data = data.unsqueeze(1) 
         data = data.float().to(device=DEVICE)
+
         targets = targets.squeeze(1).long().to(device=DEVICE)  
-        #targets = targets.long().to(device=DEVICE)  
 
 
         with amp.autocast():  
             predictions = model(data)
             loss = loss_fn(predictions, targets)
+
         optimizer.zero_grad()
         scaler.scale(loss).backward()
         scaler.step(optimizer)
         scaler.update()
 
-        loop.set_postfix(loss=loss.item())
-    
-    # scheduler.step()
+        loop.set_postfix(loss=loss.item())  
 
 def plot_learning_curve(score_allepoch, score_type, train_or_val, save_path):
     """
@@ -106,7 +142,7 @@ def plot_learning_curve(score_allepoch, score_type, train_or_val, save_path):
     plt.title(f'{score_type.capitalize()} by Epoch')
     plt.legend()
     plt.grid(True)
-    # plt.xticks(epochs)  # Ensure all epochs are shown
+    plt.xticks(epochs)  # Ensure all epochs are shown
     file_path = f"{save_path}/{train_or_val}_{score_type}_{EXP_NAME}.png"
     plt.savefig(file_path, bbox_inches='tight', pad_inches=0)
     plt.close()
@@ -114,36 +150,22 @@ def plot_learning_curve(score_allepoch, score_type, train_or_val, save_path):
 
 
 def main():
-    #define transform
-    # transform_augment = A.Compose([
-    #     A.ElasticTransform(alpha=1, sigma=30, alpha_affine=30, p=0.5),# or p=0.5 apply with prob 0.5.
-    #     ToTensorV2()  # Convert to PyTorch tensor 
-    # ])
-    transform_augment = A.Compose([
-        A.GaussNoise(var_limit=(0.001,0.001), p=0.5),
-        ToTensorV2()
-    ])
     # Create the loss function based on LOSS_TYPE
     model = MODEL
     optimizer = OPTIMIZER
     if LOSS_TYPE == "CrossEntropy":
         loss_fn = nn.CrossEntropyLoss()
-    elif LOSS_TYPE == "Dice":
-        loss_fn = DiceLoss()
     elif LOSS_TYPE == "MultiDice":
         loss_fn = MulticlassDiceLoss()
         
     else:
         logging.error('Need to define loss function.')
-
-    
  
     # Pass appropriate arguments into get_loader
     train_loader,val_loader = get_loader(MODAL_TYPE = MODAL_TYPE,
                                          BATCH_SIZE = BATCH_SIZE, 
                                          PIN_MEMORY = PIN_MEMORY,
-                                         SPLIT_RATIO = SPLIT_RATIO,
-                                         transform = transform_augment)
+                                         SPLIT_RATIO = SPLIT_RATIO)
     
     
     scaler = amp.GradScaler()
@@ -157,17 +179,16 @@ def main():
     if LOAD_MODEL:
         model = pretrained_model
         optimizer = optimizer_pretrained
-        if not FineTune:
-            dice_log = dice_log_pretrained
+        dice_log = dice_log_pretrained
         
-        # model, optimizer, start_epoch, dice_log = load_checkpoint(f"{MODEL_PATH}/model_checkpoint/{load_model_name}_model_checkpoint.pth.tar", model)
+
+
 
     for epoch in range(START_EPOCH, START_EPOCH + NUM_EPOCHS):
         print("Epoch:", epoch + 1)
         logging.info("Epoch: %d", epoch + 1)
         train_function(train_loader, model, optimizer, loss_fn, scaler)  # Using dice_loss for training
-        logging.info(f"learning rate = {optimizer.param_groups[0]['lr']}")
-        
+
         
         logging.info("===Training===")
         accuracy_train, dice_train = check_accuracy("Training", train_loader, model, device=DEVICE,NUM_CLASSES = n_out_channels)
@@ -182,19 +203,17 @@ def main():
         # save model if pass condition
         print("dice_val",dice_val)
         print("dice_log", dice_log)
-        if dice_val > dice_log:
+        if dice_val > dice_log: # val ?
             checkpoint = {
             'epoch': epoch + 1,
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
             "dice_log": dice_log
             }
-            save_checkpoint(checkpoint, save_model_path)
-            save_prediction_as_imgs(epoch+1, val_loader, model,folder=prediction_img_path, device=DEVICE) # Do we plot? for validation
+            save_checkpoint(checkpoint, save_model_path, model_checkpoints)
+            save_prediction_as_imgs(epoch+1, train_loader, model,folder=prediction_img_path, device=DEVICE) # Do we plot? for validation
             logging.info("==> Saving checkpoint at epoch %d", epoch + 1)
             dice_log = dice_val
-        
-
 
 
     #     # Print predictions ...   
@@ -204,11 +223,11 @@ def main():
 
 
 if __name__ == "__main__":
-    os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
     # make folders
     logging.info("EXPERIMENT NAME:",EXP_NAME)
-    save_model_path = f"{MODEL_PATH}/model_checkpoint/{EXP_NAME}"
-    #os.makedirs(save_model_path,exist_ok=True)
+    model_checkpoints = f"{MODEL_PATH}/model_checkpoint"
+    os.makedirs(model_checkpoints,exist_ok=True)
+    save_model_path = f"{model_checkpoints}/{EXP_NAME}"
     result_path = f"{MODEL_PATH}/RESULTS/{EXP_NAME}"
     prediction_img_path = f"{result_path}/predicted_img"
     os.makedirs(prediction_img_path,exist_ok=True)

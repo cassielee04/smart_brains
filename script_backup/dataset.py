@@ -22,6 +22,10 @@ class BRATS21_Dataset(Dataset):
     def __getitem__(self,index):
         img = load_nii_slice(self.images[index], slice = 78)
         label = load_nii_slice(self.labels[index], slice = 78) # (240, 240)
+
+        # Apply Min-Max Normalization to [0,1]
+        img = (img - img.min()) / (img.max() - img.min())
+        
         #one_hot_encoded_label = one_hot_encoder(label) # (240, 240, 4)
         multiclass_fix_map = {0: 0, 1: 1, 2: 2, 4: 3}
         binaryclass_map = {0: 0, 1: 1, 2: 1, 4: 1}
