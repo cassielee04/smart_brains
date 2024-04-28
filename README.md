@@ -1,44 +1,97 @@
-# DS598 DL4DS Final Project Smart Brains
-
-## Introduction
-
-The project focuses on enhancing the detection of brain tumors in medical image databases through automated segmentation and classification.
-Leveraging deep convolutional neural networks with multiscale feature extraction, this approach aims to efficiently identify discriminant texture features of various tumor types.
-By integrating multiscale receptive fields, it captures essential local and contextual information within the images. 
- The goal is to improve MRI's effectiveness as a non-invasive diagnostic tool, facilitating more accurate diagnosis, growth prediction, and treatment of brain tumors, underscoring the importance of automation in medical diagnostics.
+# smart_brains
+![python3.10](https://img.shields.io/badge/python-3.10-blue.svg)
 
 
+## Multimodal U-Net for Tumor segmentation
 
-## Dataset
+We implemented U-Net for the BraTS challenge using data downloaded from https://www.kaggle.com/datasets/kanisfatemashanta/brats2021-training-and-validation. Since the validation folder in this dataset does not include ground truth label data, we randomly selected 10 images from the training folder for testing purposes. We then applied an 8:2 ratio split for training and validation.
 
-For our project, we utilize the BraTS 2021 Dataset from the Brain Tumor Segmentation (BraTS) challenge, featuring a rich collection of multimodal MRI scans for brain tumor segmentation, focusing on gliomas. Gliomas, prevalent brain tumors, are classified into low-grade (LGG) and high-grade (HGG), the latter being more severe. Our data, sourced from a Kaggle dataset titled "BRATS2021 Training and Validation," includes labeled images for 341 subjects across 4 imaging modalities. We've structured our dataset into training and validation subsets, adhering to an 80:20 ratio. [BraTS 2021 Dataset](https://www.kaggle.com/datasets/kanisfatemashanta/brats2021-training-and-validation/data) 
+## Model structure
 
 
-## Model
 
-The BraTS multimodal MRI dataset is a crucial resource for brain tumor research, offering a diverse collection of MRI scans in four key modalities: T1-weighted, post-contrast T1-weighted (T1Gd), T2-weighted, and T2-FLAIR volumes. Sourced from various institutions, this dataset reflects real-world clinical diversity, making it ideal for developing and testing brain tumor detection and segmentation algorithms. It includes detailed annotations for tumor regions, aiding in the accurate training of models to distinguish tumors from healthy tissue. As a benchmark in the research community, the BraTS dataset is instrumental in advancing diagnostic and treatment planning techniques in neuro-oncology.
 
-## Set Up
 
-To get started with the `smart_brains` project, follow these steps:
+## U-Net Model Training Script
+This script is designed for training the U-Net model on medical imaging data, particularly for tasks like segmentation of brain tumors. It leverages PyTorch for deep learning functionalities and supports various data augmentations and loss functions to optimize model performance.
 
-1. **Clone the repository**
-   - Open a terminal and run the following command to clone the repository:
-     ```
-     git clone <repository-url>
-     ```
+### Features
 
-2. **Navigate to the project directory**
-   - Change directory to the cloned repository:
-     ```
-     cd smart_brains
-     ```
+- Training U-Net with customizable epochs, learning rates, and batch sizes.
+- Support for multiple loss functions and optimizers.
+- Option to load a pre-trained model or start training from scratch.
+- Data augmentation capabilities for enhanced model robustness.
+- Integration with albumentations for image transformations.
 
-3. **Submit the training job**
-   - Use the `qsub` command to submit the training job to the queue. This command requests 4 cores with OpenMP, 1 GPU, and specifies project code `ds598`. It also sets files for output and error logging.
-     ```
-     qsub -pe omp 4 -P ds598 -l gpus=1 -o output.txt -e error.txt train.sh
-     ```
+### Prerequisites
+Before running the script, ensure all libraries in the **'requiremetns.txt'** are installed:
+```command
+pip install -r requirements.txt
+```
+
+### Setup: specify your working directory
+1. Clone this repository or download the script to your local machine.
+2. Set the environment variable MODEL_PATH to specify the default path to your models. If not set, the script uses ./default_model_path as the fallback directory.
+```command
+export MODEL_PATH=./default_model_path
+```
+
+### Usage
+
+Run the script from the command line by providing the necessary arguments. Below are the supported command-line arguments along with examples on how to use them.
+
+#### Command-Line Arguments
+
+- `--num_epochs`: Number of epochs to train the model (default: 20).
+- `--learn_rate`: Learning rate for the optimizer (default: 1e-4).
+- `--batch_size`: Batch size for training (default: 16).
+- `--loss_type`: Specifies the loss function to use; options include 'CrossEntropy', 'Dice', 'MultiDice' (default: 'MultiDice').
+- `--modal_type`: Type of imaging modality to use (default: 'T1CE').
+- `--exp_name`: Name for the experiment (default: 'MyExperiment').
+- `--optimizer_name`: Name of the optimizer to use (default: 'Adam').
+- `--load_model_name`: Specifies the model name to load if resuming from a previous state.
+- `--load_last_model`: Flag to load the last saved model; use this to resume training.
+- `--with_transform`: Enable or disable data transformations during training (default: False).
+### Examples
+
+**Train a new model**
+```bash
+python parse_train.py --num_epochs 2 --learn_rate 1e-4 --modal_type t1ce,flair --exp_name "temp"
+```
+**Training with transformations**
+```bash
+python parse_train.py --num_epochs 2 --learn_rate 1e-4 --modal_type [t1ce,flair] --with_transform true --exp_name "MyExperiment"
+```
+
+
+
+## Model analysis
+This step will generate metrics--accuracy, precision, recall, specificity, F1, and Dice--to summarize models' performance and save outputs in a csv file.
+### Usage
+```command
+python scripts/metrics.py --model_folder <path_to_models_directory> [--load_model_names <model1 model2 ...>]
+```
+#### Arguments
+Run the script from the command line, providing either one of following argument:
+- **`--model_folder`** : Specifies the path to the folder containing all models. Metrics will be computed for all models in this directory unless specific models are named using the `--load_model_names` option.
+- **`--load_model_names`** : A space-separated list of specific model names to load. This parameter allows you to target specific models within the specified directory for processing.
+
+### Examples
+**1. Using the default settings:**
+```bash
+python scripts/metrics.py--model_folder path/to/model/RESULTS
+```
+This command runs the script using all models in the specified folder without specifying any particular models to load.
+
+**2. Specifying models to load:**
+```command
+python scripts/metrics.py --load_model_names "myModel1" "myModel2" "myModel3"
+```
+
+
+
+
+
 
 
 
