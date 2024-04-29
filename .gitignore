@@ -8,9 +8,15 @@
 *.png
 __pycache__/
 .ipynb_checkpoints/
+output.txt
+error.txt
+train.sh
+train2.sh
 dataset/
 
 script_backup/
+scripts/test.py
+scripts/distribution.py
 
 *.log
 
