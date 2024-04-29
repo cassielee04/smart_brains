@@ -23,11 +23,9 @@ from utils import (
 ### Put Data folder in the following format to MICCAI_FeTS2021_TestingData folder
 ### FeTS21_Training_{patient_id1} 
 ### - FeTS21_Training_{patient_id1}_flair.nii
-### - FeTS21_Training_{patient_id1}_seg.nii
 ### - FeTS21_Training_{patient_id1}_t1ce.nii
 ### FeTS21_Training_{patient_id2} 
 ### - FeTS21_Training_{patient_id2}_flair.nii
-### - FeTS21_Training_{patient_id2}_seg.nii
 ### - FeTS21_Training_{patient_id2}_t1ce.nii
 ### ...
 
