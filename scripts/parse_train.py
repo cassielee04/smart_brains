@@ -25,7 +25,7 @@ from utils import (
 # export MODEL_PATH=./default_path
 
 # python parse_train.py --num_epochs "2" --learn_rate "1e-4" --modal_type [t1ce,flair] --exp_name "temp"
-# python parse_train.py --num_epochs "2" --learn_rate "1e-4" --modal_type [t1ce,flair] --with_transform true --exp_name "temp"
+# python scripts/parse_train.py --num_epochs "2" --learn_rate "1e-4" --modal_type [t1ce,flair] --with_transform true --exp_name "temp"
 
 
 # Setup the argument parser

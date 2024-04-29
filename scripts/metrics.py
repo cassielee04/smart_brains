@@ -1,3 +1,7 @@
+"""
+this scripts will create confusion matrices, and compute accuracy, precision, accuracy, precision, recall, specificity,f1, and dice for all the specified model names
+"""
+
 import os
 import argparse
 import logging

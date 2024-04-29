@@ -10,6 +10,8 @@ __pycache__/
 .ipynb_checkpoints/
 dataset/
 
+script_backup/
+
 *.log
 
 # Ignore SCC qsub status files

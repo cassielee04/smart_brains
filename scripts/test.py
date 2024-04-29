@@ -1,3 +1,6 @@
+"""
+apply specified model on randomly selected "testing" data with ground truth
+"""
 import os
 import logging
 import torch
@@ -24,11 +27,12 @@ LEARN_RATE = 1e-8
 BATCH_SIZE = 16
 NUM_WORKERS = 4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_PATH = "/projectnb/ds598/projects/smart_brains"
+
+MAIN_PATH = os.getenv('MODEL_PATH', './default_model_path')
 load_model_name = "expAugmented_t1ce-flair_opAdam_lr0.0001_bs16_epoch0_200"
 MODAL_TYPE = load_model_name.split("_")[1].split('-')
 print(f"MODAL_TYPE = {MODAL_TYPE}")
-RESULT_PATH = f"/projectnb/ds598/projects/smart_brains/RESULTS/{load_model_name}"
+RESULT_PATH = f"{MAIN_PATH}/RESULTS/{load_model_name}"
 
 # model initialization
 n_out_channels = 4
@@ -43,11 +47,11 @@ else:
     print("Please use Adam or SGD!")
 
 # Load model
-model, optimizer, start_epoch, dice_log = load_checkpoint(f"{MODEL_PATH}/model_checkpoint/{load_model_name}_model_checkpoint.pth.tar", MODEL, OPTIMIZER)
+model, optimizer, start_epoch, dice_log = load_checkpoint(f"{MAIN_PATH}/model_checkpoint/{load_model_name}_model_checkpoint.pth.tar", MODEL, OPTIMIZER)
 
 # Load dataset
-# testing_folder_path = "/projectnb/ds598/projects/smart_brains/dataset/MICCAI_FeTS2021_ValidationData"
-testing_folder_path = "/projectnb/ds598/projects/smart_brains/dataset/MICCAI_FeTS2021_TestingData"
+# testing_folder_path = f"{MAIN_PATH}/dataset/MICCAI_FeTS2021_ValidationData"
+testing_folder_path = f"{MAIN_PATH}/dataset/MICCAI_FeTS2021_TestingData"
 testing_folder_names = sorted([fname for fname in os.listdir(testing_folder_path) if "FeTS21" in fname])
 print(f"There are {len(testing_folder_names)} Testing Data, from {testing_folder_names[0].split('_')[-1]} to {testing_folder_names[-1].split('_')[-1]}")
 MODAL_TYPE = [modal.lower() for modal in MODAL_TYPE]
