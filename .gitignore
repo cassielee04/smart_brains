@@ -18,6 +18,13 @@ script_backup/
 scripts/test.py
 scripts/distribution.py
 
+RESULTS/exp_flair_opAdam_lr0.0001_bs16_epoch0_200
+RESULTS/exp_t1ce_opAdam_lr0.0001_bs16_epoch0_200
+RESULTS/exp_t1ce-flair_opAdam_lr0.0001_bs16_epoch0_200
+RESULTS/expAugmented_flair_opAdam_lr0.0001_bs16_epoch0_200
+RESULTS/expAugmented_t1ce_opAdam_lr0.0001_bs16_epoch0_200
+RESULTS/MyExperiment_t1ce-flair_opAdam_lr0.0001_bs16_epoch0_50
+RESULTS/temp_t1ce-flair_opAdam_lr0.0001_bs16_epoch0_2
 *.log
 
 # Ignore SCC qsub status files
